@@ -3,7 +3,7 @@
 #data_path = 'datasets/twitter/'
 #model_path = 'models/twitter/'
 data_path = 'datasets/cornell-movie/'
-model_path = 'ckpt/cornell-movie/'
+model_path = 'models/cornell-movie/'
 vocab_size = 8000
 source_len = 20
 target_len = 20
