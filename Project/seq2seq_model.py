@@ -6,6 +6,7 @@ Created on Mon Feb 13 19:19:28 2017
 """
 # Seq2Se
 import tensorflow as tf
+import seq2seq_model_beam
 import numpy as np
 import model_utils
 
@@ -55,25 +56,30 @@ class Seq2Seq(object):
 
         # decoder based on model type
         if self.model_type == 1: # Seq2Seq model
-            self.decoder_outputs, self.decoder_states = tf.contrib.legacy_seq2seq.embedding_rnn_seq2seq(
+            self.decoder_outputs, self.decoder_states = seq2seq_model_beam.embedding_rnn_seq2seq(
                     self.encoder_inputs,self.decoder_inputs, stacked_lstm,
-                    source_vocab_size, target_vocab_size, layer_size)
+                    source_vocab_size, target_vocab_size, layer_size,
+                    beam_search=False, beam_size=10)
             # share parameters
             with tf.variable_scope(tf.get_variable_scope(), reuse=True):
                 # testing model, where output of previous timestep is fed as input to the next timestep
-                self.decoder_outputs_test, self.decoder_states_test = tf.contrib.legacy_seq2seq.embedding_rnn_seq2seq(
+                self.decoder_outputs_test, self.decoder_states_test = seq2seq_model_beam.embedding_rnn_seq2seq(
                     self.encoder_inputs,self.decoder_inputs, stacked_lstm, source_vocab_size, 
-                    target_vocab_size, layer_size, feed_previous=True)
+                    target_vocab_size, layer_size, feed_previous=True,
+                    beam_search=False, beam_size=10)
         else:   #Seq2Seq Model with attention mechanism
-            self.decoder_outputs, self.decoder_states = tf.contrib.legacy_seq2seq.embedding_attention_seq2seq(
+            self.decoder_outputs, self.decoder_states = seq2seq_model_beam.embedding_attention_seq2seq(
                     self.encoder_inputs,self.decoder_inputs, stacked_lstm,
-                    source_vocab_size, target_vocab_size, layer_size, self.attention_heads)
+                    source_vocab_size, target_vocab_size, layer_size,
+                    num_heads=self.attention_heads,
+                    beam_search=False, beam_size=10)
             # share parameters
             with tf.variable_scope(tf.get_variable_scope(), reuse=True):
                 # testing model, where output of previous timestep is fed as input to the next timestep
-                self.decoder_outputs_test, self.decoder_states_test = tf.contrib.legacy_seq2seq.embedding_attention_seq2seq(
+                self.decoder_outputs_test, self.decoder_states_test = seq2seq_model_beam.embedding_attention_seq2seq(
                     self.encoder_inputs,self.decoder_inputs, stacked_lstm, source_vocab_size, 
-                    target_vocab_size, layer_size, self.attention_heads, feed_previous=True)
+                    target_vocab_size, layer_size, num_heads=self.attention_heads,
+                    feed_previous=True, beam_search=False, beam_size=10)
 
         
         # define loss fucntion
