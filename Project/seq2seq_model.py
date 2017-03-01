@@ -7,6 +7,7 @@ Created on Mon Feb 13 19:19:28 2017
 # Seq2Se
 import tensorflow as tf
 import numpy as np
+import model_utils
 
 class Seq2Seq(object):
     # Initialize Computation Graph
@@ -87,7 +88,12 @@ class Seq2Seq(object):
         print("Finish initialization.")
         
     # train seq2seq model
-    def train(self, train_set, valid_set, sess=None ):
+    def train(self, trainX, trainY, validX, validY, batch_size, sess=None, ):
+        # batch generator
+        train_set = model_utils.batch_gen(trainX, trainY, batch_size)
+        valid_set = model_utils.batch_gen(validX, validY, batch_size)
+        no_valid_iter = int(len(validX)/batch_size)
+        
         # model saver
         saver = tf.train.Saver()
 
@@ -97,7 +103,7 @@ class Seq2Seq(object):
             sess.run(tf.global_variables_initializer())
 
         print("Start training.")
-        prev_loss = float('INF')
+        best_loss = float('INF')
         # run M epochs
         for i in range(self.epochs):
             try:
@@ -110,7 +116,7 @@ class Seq2Seq(object):
                 if i and i% (self.epochs//100) == 0:
                     # evaluate
                     losses = []
-                    for j in range(16):
+                    for j in range(no_valid_iter):
                         valid_source, valid_target = valid_set.next() 
                         feed_dict = self.get_feed(valid_source, valid_target, 1.0)
                         valid_loss, _ = sess.run([self.loss, self.decoder_outputs_test], feed_dict)
@@ -119,14 +125,15 @@ class Seq2Seq(object):
                     # print loss
                     print('Epoch %i - val_loss: %10.6f' %(i, val_loss))
                     # save best model
-                    if (val_loss < prev_loss):
-                        prev_loss = val_loss
+                    if (val_loss < best_loss):
+                        best_loss = val_loss
                         saver.save(sess, self.model_path + 'model.ckpt')
                         print('---Best val_loss: %10.6f' %val_loss)
             except KeyboardInterrupt: # this will most definitely happen, so handle it
                 print('Interrupted by user at iteration {}'.format(i))
                 self.session = sess
                 return sess
+        print('---Best val_loss: %10.6f' %best_loss)
         
     # get the feed dictionary
     def get_feed(self, X, Y, dropout):
