@@ -92,7 +92,8 @@ class Seq2Seq(object):
         # batch generator
         train_set = model_utils.batch_gen(trainX, trainY, batch_size)
         valid_set = model_utils.batch_gen(validX, validY, batch_size)
-        no_valid_iter = int(len(validX)/batch_size)
+        no_train_batch = int(len(trainX)/batch_size)
+        no_valid_batch = int(len(validX)/batch_size)
         
         # model saver
         saver = tf.train.Saver()
@@ -108,27 +109,29 @@ class Seq2Seq(object):
         for i in range(self.epochs):
             try:
                 # train batch
-                train_source, train_target = train_set.next()                
-                feed_dict = self.get_feed(train_source, train_target, 0.5)
-                sess.run([self.optimizer, self.loss], feed_dict)
+                losses = []
+                for j in range(no_train_batch):
+                    train_source, train_target = train_set.next()                
+                    feed_dict = self.get_feed(train_source, train_target, 0.5)
+                    _ , loss = sess.run([self.optimizer, self.loss], feed_dict)
+                    losses.append(loss)
+                train_loss = np.mean(losses)
                 
-                # evaluate every 1000 epochs
-                if i and i% (self.epochs//100) == 0:
-                    # evaluate
-                    losses = []
-                    for j in range(no_valid_iter):
-                        valid_source, valid_target = valid_set.next() 
-                        feed_dict = self.get_feed(valid_source, valid_target, 1.0)
-                        valid_loss, _ = sess.run([self.loss, self.decoder_outputs_test], feed_dict)
-                        losses.append(valid_loss)
-                    val_loss = np.mean(losses)
-                    # print loss
-                    print('Epoch %i - val_loss: %10.6f' %(i, val_loss))
-                    # save best model
-                    if (val_loss < best_loss):
-                        best_loss = val_loss
-                        saver.save(sess, self.model_path + 'model.ckpt')
-                        print('---Best val_loss: %10.6f' %val_loss)
+                # evaluate
+                losses = []
+                for j in range(no_valid_batch):
+                    valid_source, valid_target = valid_set.next() 
+                    feed_dict = self.get_feed(valid_source, valid_target, 1.0)
+                    loss, _ = sess.run([self.loss, self.decoder_outputs_test], feed_dict)
+                    losses.append(loss)
+                val_loss = np.mean(losses)
+                # print loss
+                print('Epoch %i - train_loss: %10.6f, val_loss: %10.6f' %(i, train_loss, val_loss))
+                # save best model
+                if (val_loss < best_loss):
+                    best_loss = val_loss
+                    saver.save(sess, self.model_path + 'model.ckpt')
+                    print('---Best val_loss: %10.6f' %val_loss)
             except KeyboardInterrupt: # this will most definitely happen, so handle it
                 print('Interrupted by user at iteration {}'.format(i))
                 self.session = sess
