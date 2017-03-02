@@ -14,4 +14,4 @@ attention_heads = 1
 reverseInput = False
 batch_size = 2128
 learning_rate=0.001
-epochs=50000
+epochs=20
