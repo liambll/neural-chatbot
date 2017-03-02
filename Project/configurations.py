@@ -12,6 +12,6 @@ num_layers = 3
 model_type = 1 #1 - Seq2Seq; 2 - Seq2Seq with attention
 attention_heads = 1
 reverseInput = False
-batch_size = 2128
+batch_size = 128
 learning_rate=0.001
 epochs=20
