@@ -5,6 +5,7 @@ Created on Mon Feb 13 19:19:28 2017
 @author: linhb
 """
 # Seq2Se
+import six
 import tensorflow as tf
 import seq2seq_model_beam
 import numpy as np
@@ -117,7 +118,7 @@ class Seq2Seq(object):
                 # train batch
                 losses = []
                 for j in range(no_train_batch):
-                    train_source, train_target = train_set.next()                
+                    train_source, train_target = six.next(train_set)                
                     feed_dict = self.get_feed(train_source, train_target, 0.5)
                     _ , loss = sess.run([self.optimizer, self.loss], feed_dict)
                     losses.append(loss)
@@ -126,7 +127,7 @@ class Seq2Seq(object):
                 # evaluate
                 losses = []
                 for j in range(no_valid_batch):
-                    valid_source, valid_target = valid_set.next() 
+                    valid_source, valid_target = six.next(valid_set) 
                     feed_dict = self.get_feed(valid_source, valid_target, 1.0)
                     loss, _ = sess.run([self.loss, self.decoder_outputs_test], feed_dict)
                     losses.append(loss)
