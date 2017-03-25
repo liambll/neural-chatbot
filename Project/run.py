@@ -5,6 +5,7 @@ Created on Mon Feb 13 19:19:28 2017
 @author: linhb
 """
 
+import six
 import configurations
 import data
 import model_utils
@@ -57,14 +58,11 @@ def main(argv=None):
     sess = model.load_model()
                                
     if (mode.lower() == "train"):
-        val_batch_gen = model_utils.batch_gen(validX, validY, batch_size)
-        train_batch_gen = model_utils.batch_gen(trainX, trainY, batch_size)
-
-        sess = model.train(train_batch_gen, val_batch_gen)
+        sess = model.train(trainX, trainY, validX, validY, batch_size)
     
     elif (mode.lower() == "test"):
-        test_batch_gen = model_utils.batch_gen(testX, testY, 256)
-        input_ = test_batch_gen.__next__()[0]
+        test_batch_gen = model_utils.batch_gen(testX, testY, batch_size)
+        input_ = six.next(test_batch_gen)[0]
         
         output = model.predict(sess, input_)
         
