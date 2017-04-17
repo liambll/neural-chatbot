@@ -62,17 +62,20 @@ def main(argv=None):
     
     elif (mode.lower() == "test"):
         test_batch_gen = model_utils.batch_gen(testX, testY, batch_size)
-        input_ = six.next(test_batch_gen)[0]
+        nextbatch = six.next(test_batch_gen)
+        input_ = nextbatch[0]
+        output_ = nextbatch[1]
         
-        output = model.predict(sess, input_)
+        prediction = model.predict(sess, input_)
         
         replies = []
-        for ii, oi in zip(input_.T, output):
-            q = data.decode(sequence=ii, lookup=metadata['idx2w'], separator=' ')
-            decoded = data.decode(sequence=oi, lookup=metadata['idx2w'], separator=' ').split(' ')
-            if decoded.count('unk') == 0:
+        for i in range(len(prediction)):
+            q = data.decode(sequence=input_.T[i], lookup=metadata['idx2w'], separator=' ')
+            a = data.decode(sequence=output_.T[i], lookup=metadata['idx2w'], separator=' ')
+            decoded = data.decode(sequence=prediction[i], lookup=metadata['idx2w'], separator=' ').split(' ')
+            if ((q.count('unk') == 0) & (a.count('unk') == 0) & (decoded.count('unk') == 0)):
                 if decoded not in replies:
-                    print('q : [{0}]; a : [{1}]'.format(q, ' '.join(decoded)))
+                    print('q : [{0}]\n a : [{1}]\n p : [{2}]\n\n'.format(q, a, ' '.join(decoded)))
                     replies.append(decoded)
                
     elif (mode.lower() == "demo"):
