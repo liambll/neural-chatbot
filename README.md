@@ -1,4 +1,4 @@
-# Deep Learning Project: Question-Answer Style Chatbot using Deep Learning Sequence to Sequence LSTM model #
+# Question-Answer Style Chatbot using Deep Learning Sequence to Sequence LSTM model #
 - chatbot development using Sequence to Sequence Learning (LSTM) for language models with Attention Mechanism
 - web-based demo for user-chatbot conversation
 - Technologies: Python, NLTK, Tensorflow, Flask
